@@ -4,332 +4,513 @@
 <head>
     <meta charset="UTF-8">
     <title>Cluedo – Feuille d’enquête</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        /* 🎨 Thème FBI Minimaliste */
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
+    <style>
         :root {
-            --bg: #f7f7f7;
+            --bg: #f5f5f5;
             --text: #111;
             --card: #ffffff;
-            --border: #bbb;
+            --border: #ccc;
             --accent: #222;
-            --danger: #c93f3f;
-            --success: #1c8d3a;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --cell-size: 48px;
+            --font-size: 0.9rem
         }
 
         body.dark {
-            --bg: #000000;
-            --text: #e8e8e8;
-            --card: #0f0f0f;
-            --border: #333;
-            --accent: #e8e8e8;
+            --bg: #222;
+            --text: #eaeaea;
+            --card: #2b2b2b;
+            --border: #555;
+            --accent: #444
         }
 
+        html,
         body {
-            margin: 0;
-            padding: 0;
+            overscroll-behavior: contain;
+            touch-action: manipulation !important;
             background: var(--bg);
             color: var(--text);
             font-family: "Inter", Arial, sans-serif;
+            margin: 0;
+            padding: 0
         }
 
-        /* HEADER TITLE */
-
-        h1 {
+        .cluedo-header {
             background: var(--accent);
-            color: white;
-            padding: 12px;
-            margin: 0 0 10px;
-            letter-spacing: 2px;
-            font-size: clamp(1rem, 5vw, 1.6rem);
-            text-align: center;
+            color: #fff;
+            border-radius: .75rem;
+            padding: .75rem 1rem
         }
 
-        /* PANEL */
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 12px;
+        body.dark .cluedo-header {
+            background: #111
         }
 
-        /* BUTTONS */
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 8px;
+        .cluedo-controls .btn {
+            min-width: 110px
         }
-
-        button {
-            padding: 6px 14px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        button:hover {
-            background: var(--border);
-            cursor: pointer;
-        }
-
-        button.danger {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        button.success {
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        /* TABLE */
 
         .table-wrapper {
-            overflow-x: auto;
-            border-radius: 6px;
-        }
-
-        table {
-            width: max-content;
-            min-width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
+            background: var(--card);
+            border-radius: .75rem;
             border: 1px solid var(--border);
-            padding: 6px;
+            padding: .5rem
+        }
+
+        table#sheet {
+            width: 100%;
+            table-layout: fixed;
+            font-size: var(--font-size);
+            border-collapse: collapse;
+            user-select: none
+        }
+
+        #sheet th,
+        #sheet td {
+            border: 1px solid var(--border);
             text-align: center;
-            font-size: .9rem;
-            white-space: nowrap;
+            padding: 4px;
+            background: var(--card);
+            color: var(--text)
         }
 
-        th {
+        #sheet thead th {
             background: var(--accent);
-            color: white;
-            font-weight: 600;
+            color: #fff !important
         }
 
-        th.player-name[contenteditable],
-        th.player-name {
-            background: #2e2e2e;
+        body.dark #sheet thead th {
+            background: #232323 !important;
+            color: white !important
         }
 
-        /* CARTES */
+        .player-name {
+            cursor: text;
+            background: #333;
+            color: #fff !important
+        }
+
+        body.dark .player-name {
+            background: #555;
+            color: #eee !important
+        }
 
         td.label-cell {
             text-align: left;
-            font-weight: 500;
+            font-weight: 500
         }
 
         td.label-cell.strike {
             text-decoration: line-through;
-            opacity: .4;
+            opacity: .5
         }
 
-        /* CASES */
+        .notes-cell {
+            background: #fafafa
+        }
 
-        td.cell {
+        body.dark .notes-cell {
+            background: #2b2b2b;
+            color: #eee
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
             background: var(--card);
             cursor: pointer;
-            user-select: none;
-            width: 48px;
-            height: 42px;
-            position: relative;
+            position: relative
         }
 
-        .symbol {
-            font-size: 1.2rem;
-            font-weight: bold;
+        .cell:active {
+            transform: scale(0.95)
+        }
+
+        .cell.x {
+            background: #ffcccc;
+            border: 1px solid #d65a5a
+        }
+
+        .symbol.x {
+            color: var(--danger);
+            font-weight: bold
+        }
+
+        .cell.v {
+            background: #d3f7d5;
+            border: 1px solid #69b478
+        }
+
+        .symbol.v {
+            color: var(--success);
+            font-weight: bold
         }
 
         .numbers {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 0;
+            inset: 2px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            font-size: .55rem;
-            pointer-events: none;
-            text-align: left;
-            line-height: 1.1;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            font-size: .75rem;
+            pointer-events: none
         }
 
-        /* RESPONSIVE */
+        .numbers span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text)
+        }
 
-        @media(max-width:768px) {
-            .symbol {
-                display: none
-            }
+        body.dark .numbers span {
+            color: white
+        }
 
-            td.cell {
-                height: 50px
-            }
+        .modal-content {
+            background: var(--card) !important;
+            color: var(--text)
+        }
 
-            .numbers {
-                font-size: .9rem;
+        body.dark .modal-content {
+            background: #1c1c1c !important;
+            color: #fafafa !important
+        }
+
+        body.dark select,
+        body.dark input {
+            background: #333 !important;
+            color: white !important;
+            border-color: #666
+        }
+
+        #btnSaveSupposition {
+            background: var(--accent);
+            color: #fff;
+            border: none
+        }
+
+        #btnSaveSupposition:hover {
+            opacity: .8
+        }
+
+        body.dark #btnSaveSupposition {
+            background: #666;
+            color: white
+        }
+
+        #suppHistory .list-group-item {
+            background: var(--card);
+            color: var(--text)
+        }
+
+        body.dark #suppHistory .list-group-item {
+            background: #2a2a2a;
+            color: #eee
+        }
+
+        .dropdown-menu {
+            background: var(--card);
+            border: 1px solid var(--border)
+        }
+
+        .dropdown-item:hover {
+            background: var(--border)
+        }
+
+        body.dark .dropdown-menu {
+            background: #2b2b2b;
+            border: 1px solid #666
+        }
+
+        body.dark .dropdown-item:hover {
+            background: #444
+        }
+
+        @media(max-width:992px) {
+            :root {
+                --cell-size: 42px;
+                --font-size: 0.8rem
             }
+        }
+
+        @media(max-width:576px) {
+            :root {
+                --cell-size: 38px;
+                --font-size: 0.75rem
+            }
+        }
+
+        .table-wrapper {
+            background: #ffffff !important
+        }
+
+        body.dark .table-wrapper {
+            background: #1e1e1e !important
+        }
+
+        #sheet thead th {
+            background: #ffffff !important;
+            color: #000000 !important
+        }
+
+        body.dark #sheet thead th {
+            background: #2a2a2a !important
+        }
+
+        body.dark .btn-outline-secondary {
+            color: #f7f7f7 !important;
+            border-color: #d0d0d0 !important
+        }
+
+        body.dark .btn-outline-primary {
+            color: #d6e7ff !important;
+            border-color: #9ac2ff !important
+        }
+
+        body.dark .btn-outline-danger {
+            color: #ff9b9b !important;
+            border-color: #ff7d7d !important
+        }
+
+        td.label-cell {
+            background: #f0f0f0;
+            font-weight: 600
+        }
+
+        body.dark td.label-cell {
+            background: #3b3b3b;
+            color: #fff !important;
+            font-weight: 600
+        }
+
+        .cell {
+            background: var(--card) !important
+        }
+
+        body.dark .cell {
+            background: #262626 !important
+        }
+
+        .cell.x {
+            background: #ffdddd !important;
+            border-color: #ff7575 !important
+        }
+
+        body.dark .cell.x {
+            background: #692c2c !important;
+            border-color: #d96a6a !important
+        }
+
+        .cell.v {
+            background: #dbf8df !important;
+            border-color: #6fbe81 !important
+        }
+
+        body.dark .cell.v {
+            background: #294c34 !important;
+            border-color: #77d899 !important
+        }
+
+        .theme-toggle-btn {
+            background: #f8f9fa;
+            color: #222;
+            border: 1px solid #999
+        }
+
+        .theme-close {
+            filter: invert(0)
+        }
+
+        body.dark .theme-toggle-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #aaa
+        }
+
+        body.dark .theme-close {
+            filter: invert(1)
+        }
+
+        .theme-toggle-btn:hover {
+            opacity: .9
+        }
+
+        .notes-cell {
+            display: none !important
+        }
+
+        html,
+        body,
+        * {
+            touch-action: manipulation !important
+        }
+
+        /* 🔧 Fix: Dropdown text en blanc en dark mode */
+        body.dark .dropdown-menu,
+        body.dark .dropdown-item {
+            color: #fff !important;
+        }
+
+        body.dark .dropdown-item:hover,
+        body.dark .dropdown-item:focus {
+            color: #fff !important;
+            background: #444 !important;
+        }
+
+        /* Le bouton dropdown aussi */
+        body.dark .hand-dropdown-btn {
+            color: #fff !important;
         }
     </style>
 </head>
 
 <body>
+    <div class="container-fluid py-3">
+        <div class="cluedo-header d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2"><span class="fs-4">🕵️</span>
+                <div>
+                    <div class="fw-bold">Feuille d’Enquête Cluedo</div>
+                    <div class="small opacity-75">Version Bootstrap – mobile friendly</div>
+                </div>
+            </div>
+            <button id="toggleDark" class="btn btn-sm btn-outline-light mt-2 mt-sm-0">🌙 / ☀️</button>
+        </div>
 
-    <h1>🕵️ DOSSIER D'ENQUÊTE – CLUEDO</h1>
-
-    <div class="container">
-
-        <div class="controls">
-            <button id="removePlayer">➖ Retirer joueur</button>
-            <button id="addPlayer">➕ Ajouter joueur</button>
-            <button id="clearAll" class="danger">🗑️ Effacer</button>
-            <button id="toggleDark" class="success">🌙/☀️</button>
+        <div class="cluedo-controls d-flex flex-wrap gap-2 justify-content-center mb-3">
+            <button id="removePlayer" class="btn btn-sm btn-outline-secondary">➖ Joueur</button>
+            <button id="addPlayer" class="btn btn-sm btn-outline-secondary">➕ Joueur</button>
+            <button id="zoomIn" class="btn btn-sm btn-outline-secondary">⬆️ Zoom</button>
+            <button id="zoomOut" class="btn btn-sm btn-outline-secondary">⬇️ Zoom</button>
+            <button id="btnSuppositions" class="btn btn-sm btn-outline-primary">🧠 Suppositions</button>
+            <button id="clearAll" class="btn btn-sm btn-outline-danger">🗑 Effacer</button>
         </div>
 
         <div class="table-wrapper">
-            <table id="sheet">
-                <thead>
-                    <tr id="nameRow">
-                        <th>Carte</th>
-                        <th class="player-name" contenteditable="true">J1</th>
-                        <th class="player-name" contenteditable="true">J2</th>
-                        <th class="player-name" contenteditable="true">J3</th>
-                        <th class="player-name" contenteditable="true">J4</th>
-                        <th class="player-name" contenteditable="true">J5</th>
-                        <th class="player-name" contenteditable="true">J6</th>
-                        <th>Notes</th>
-                    </tr>
-                    <tr id="handRow">
-                        <th>Cartes</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th class="hand-count" contenteditable="true">0</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="body"></tbody>
-            </table>
+            <div class="table-responsive" id="tableWrapper">
+                <table id="sheet" class="table table-bordered align-middle mb-0">
+                    <thead>
+                        <tr id="nameRow"></tr>
+                        <tr id="handRow"></tr>
+                    </thead>
+                    <tbody id="body"></tbody>
+                </table>
+            </div>
         </div>
-
     </div>
 
+    <div class="modal fade" id="suppModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h5 class="modal-title fs-6">Suppositions</h5>
+                    <button type="button" class="btn-close theme-close btn-sm" data-bs-dismiss="modal"
+                        aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-3"><label class="form-label form-label-sm small mb-1"
+                                for="suppPlayerSelect">Joueur</label><select id="suppPlayerSelect"
+                                class="form-select form-select-sm"></select></div>
+                        <div class="col-12 col-md-3"><label class="form-label form-label-sm small mb-1"
+                                for="suppSuspectSelect">Suspect</label><select id="suppSuspectSelect"
+                                class="form-select form-select-sm"></select></div>
+                        <div class="col-12 col-md-3"><label class="form-label form-label-sm small mb-1"
+                                for="suppArmeSelect">Arme</label><select id="suppArmeSelect"
+                                class="form-select form-select-sm"></select></div>
+                        <div class="col-12 col-md-3"><label class="form-label form-label-sm small mb-1"
+                                for="suppLieuSelect">Lieu</label><select id="suppLieuSelect"
+                                class="form-select form-select-sm"></select></div>
+                    </div>
+                    <div class="d-flex justify-content-end mb-3"><button id="btnSaveSupposition" type="button"
+                            class="btn btn-sm btn-primary">💾 Enregistrer la supposition</button></div>
+
+                    <hr class="my-2">
+                    <h6 class="small mb-2">Historique des suppositions</h6>
+                    <div id="suppHistory" class="list-group list-group-flush small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
     <script>
-        /* 📌 CARTES COURTES */
         const suspects = ["Rose", "Moutarde", "Olive", "Violet", "Leblanc", "Pervenche"];
         const armes = ["Chandelier", "Poignard", "Revolver", "Corde", "Matraque", "Anglaise"];
         const lieux = ["Cuisine", "Bal", "Véranda", "Bibliothèque", "Billard", "Hall", "Salon", "Salle à manger", "Bureau"];
+        const bodyEl = document.getElementById("body");
+        const nameRow = document.getElementById("nameRow");
+        const handRow = document.getElementById("handRow");
+        let players = parseInt(localStorage.getItem("players") || "4"); players = Math.min(6, Math.max(1, players));
+        let zoom = parseInt(localStorage.getItem("zoom") || "48");
+        let suppositions = []; let currentSuppositionId = null;
+        const suppModalEl = document.getElementById("suppModal");
+        const suppModal = new bootstrap.Modal(suppModalEl);
+        const suppPlayerSelect = document.getElementById("suppPlayerSelect");
+        const suppSuspectSelect = document.getElementById("suppSuspectSelect");
+        const suppArmeSelect = document.getElementById("suppArmeSelect");
+        const suppLieuSelect = document.getElementById("suppLieuSelect");
+        const suppHistoryEl = document.getElementById("suppHistory");
 
-        const sections = [suspects, armes, lieux];
-        const body = document.getElementById("body");
+        function applyZoom() { document.documentElement.style.setProperty("--cell-size", zoom + "px"); document.documentElement.style.setProperty("--font-size", (zoom / 48 * .9) + "rem") }
+        function makeSection(title) { return `<tr class="section-title"><td colspan="${players + 1}">${title}</td></tr>` }
+        function makeRow(name, type, index) { let cells = ""; for (let i = 0; i < players; i++) { cells += `<td class="cell"><span class="symbol"></span><div class="numbers">${"<span></span>".repeat(9)}</div></td>` } return `<tr data-type="${type}" data-index="${index}"><td class="label-cell">${name}</td>${cells}</tr>` }
+        function renderBody() { bodyEl.innerHTML = ""; bodyEl.insertAdjacentHTML("beforeend", makeSection("🔎 Suspects")); suspects.forEach((n, i) => bodyEl.insertAdjacentHTML("beforeend", makeRow(n, "suspect", i))); bodyEl.insertAdjacentHTML("beforeend", makeSection("🛠️ Armes")); armes.forEach((n, i) => bodyEl.insertAdjacentHTML("beforeend", makeRow(n, "arme", i))); bodyEl.insertAdjacentHTML("beforeend", makeSection("📍 Lieux")); lieux.forEach((n, i) => bodyEl.insertAdjacentHTML("beforeend", makeRow(n, "lieu", i))) }
+        function renderHeader() { nameRow.innerHTML = ""; handRow.innerHTML = ""; const thLabel = document.createElement("th"); thLabel.textContent = "Carte"; nameRow.appendChild(thLabel); const thCartes = document.createElement("th"); thCartes.textContent = "Cartes"; handRow.appendChild(thCartes); for (let i = 0; i < players; i++) { const thName = document.createElement("th"); thName.className = "player-name"; thName.contentEditable = "true"; thName.textContent = `J${i + 1}`; nameRow.appendChild(thName); const thHand = document.createElement("th"); const dropdownDiv = document.createElement("div"); dropdownDiv.className = "dropdown"; let options = ""; for (let n = 0; n <= 9; n++) { options += `<li><button class="dropdown-item hand-count-option" type="button" data-player-index="${i}" data-value="${n}">${n}</button></li>` } dropdownDiv.innerHTML = `<button class="btn btn-sm dropdown-toggle hand-dropdown-btn theme-toggle-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-player-index="${i}"><span class="hand-count-value">0</span></button><ul class="dropdown-menu dropdown-menu-end">${options}</ul>`; thHand.appendChild(dropdownDiv); handRow.appendChild(thHand) } }
+        function getPlayerDisplayName(playerIndex) { const headerCell = nameRow.children[playerIndex + 1]; return headerCell?.textContent?.trim() || `J${playerIndex + 1}` }
+        function save() { localStorage.setItem("cluedo-body", bodyEl.innerHTML); localStorage.setItem("zoom", zoom); localStorage.setItem("dark", document.body.classList.contains("dark")); localStorage.setItem("players", players); localStorage.setItem("cluedo-suppositions", JSON.stringify(suppositions)) }
+        function loadSuppositions() { const raw = localStorage.getItem("cluedo-suppositions"); if (!raw) { suppositions = []; return } try { const data = JSON.parse(raw); suppositions = Array.isArray(data) ? data : [] } catch { suppositions = [] } }
+        function clearAllNumbersInGrid() { bodyEl.querySelectorAll(".cell .numbers span").forEach(s => { s.style.display = ""; s.textContent = "" }) }
+        function setCellNumber(cell, number) { if (!cell) return; const slots = cell.querySelectorAll(".numbers span"); for (const s of slots) { if (s.textContent.trim() === String(number)) return } for (const s of slots) { if (s.textContent.trim() === "") { s.textContent = String(number); return } } }
+        function findCellFor(playerIndex, type, index) { const row = bodyEl.querySelector(`tr[data-type="${type}"][data-index="${index}"]`); if (!row) return null; const cells = row.querySelectorAll("td.cell"); return cells[playerIndex] || null }
+        function applySuppositions() { clearAllNumbersInGrid(); const byPlayer = new Map; for (const s of suppositions) { if (!byPlayer.has(s.playerIndex)) byPlayer.set(s.playerIndex, []); byPlayer.get(s.playerIndex).push(s) } for (const [pIndex, list] of byPlayer.entries()) { const sorted = list.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); let number = 1; for (const entry of sorted) { const cellSuspect = findCellFor(pIndex, "suspect", entry.suspectIndex); const cellArme = findCellFor(pIndex, "arme", entry.armeIndex); const cellLieu = findCellFor(pIndex, "lieu", entry.lieuIndex); setCellNumber(cellSuspect, number); setCellNumber(cellArme, number); setCellNumber(cellLieu, number); number++ } } }
+        function getOrderForSupposition(entry) { const samePlayer = suppositions.filter(s => s.playerIndex === entry.playerIndex).slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); const idx = samePlayer.findIndex(s => s.id === entry.id); return idx >= 0 ? idx + 1 : 0 }
+        function updateSuppositionsHistoryUI() { suppHistoryEl.innerHTML = ""; if (suppositions.length === 0) { suppHistoryEl.innerHTML = `<div class="text-muted small fst-italic px-2 py-1">Aucune supposition pour le moment.</div>`; return } const sorted = suppositions.slice().sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); for (const entry of sorted) { const order = getOrderForSupposition(entry); const playerLabel = getPlayerDisplayName(entry.playerIndex); const suspectLabel = suspects[entry.suspectIndex] || "?"; const armeLabel = armes[entry.armeIndex] || "?"; const lieuLabel = lieux[entry.lieuIndex] || "?"; const item = document.createElement("div"); item.className = "list-group-item d-flex justify-content-between align-items-center px-2 py-1"; item.innerHTML = `<div class="me-2 flex-grow-1">${playerLabel} : ${suspectLabel} / ${armeLabel} / ${lieuLabel} → ${order}</div><div class="btn-group btn-group-sm"><button type="button" class="btn btn-outline-secondary btn-edit-supposition" data-id="${entry.id}">✏️</button><button type="button" class="btn btn-outline-danger btn-delete-supposition" data-id="${entry.id}">🗑</button></div>`; suppHistoryEl.appendChild(item) } }
+        function fillSuspectSelect() { suppSuspectSelect.innerHTML = ""; suspects.forEach((name, i) => { const opt = document.createElement("option"); opt.value = i; opt.textContent = name; suppSuspectSelect.appendChild(opt) }) }
+        function fillArmeSelect() { suppArmeSelect.innerHTML = ""; armes.forEach((name, i) => { const opt = document.createElement("option"); opt.value = i; opt.textContent = name; suppArmeSelect.appendChild(opt) }) }
+        function fillLieuSelect() { suppLieuSelect.innerHTML = ""; lieux.forEach((name, i) => { const opt = document.createElement("option"); opt.value = i; opt.textContent = name; suppLieuSelect.appendChild(opt) }) }
+        function fillPlayerSelect() { suppPlayerSelect.innerHTML = ""; for (let i = 0; i < players; i++) { const opt = document.createElement("option"); opt.value = i; opt.textContent = getPlayerDisplayName(i); suppPlayerSelect.appendChild(opt) } }
+        function resetSuppositionForm() { if (suppPlayerSelect.options.length > 0) suppPlayerSelect.selectedIndex = 0; if (suppSuspectSelect.options.length > 0) suppSuspectSelect.selectedIndex = 0; if (suppArmeSelect.options.length > 0) suppArmeSelect.selectedIndex = 0; if (suppLieuSelect.options.length > 0) suppLieuSelect.selectedIndex = 0; currentSuppositionId = null }
+        function openSuppositionsModal(editId = null) { fillPlayerSelect(); resetSuppositionForm(); if (editId != null) { const entry = suppositions.find(s => s.id === editId); if (entry) { currentSuppositionId = entry.id; suppPlayerSelect.value = String(entry.playerIndex); suppSuspectSelect.value = String(entry.suspectIndex); suppArmeSelect.value = String(entry.armeIndex); suppLieuSelect.value = String(entry.lieuIndex) } } updateSuppositionsHistoryUI(); suppModal.show() }
+        function initialRender() { renderHeader(); renderBody(); const savedBody = localStorage.getItem("cluedo-body"); if (savedBody) { bodyEl.innerHTML = savedBody } const savedDark = localStorage.getItem("dark"); if (savedDark === "true") document.body.classList.add("dark"); const savedZoom = parseInt(localStorage.getItem("zoom") || zoom); zoom = savedZoom; applyZoom(); fillSuspectSelect(); fillArmeSelect(); fillLieuSelect(); fillPlayerSelect(); loadSuppositions(); applySuppositions() }
+        function setSymbol(cell, symbol) { const sym = cell.querySelector(".symbol"); cell.classList.remove("x", "v"); sym.className = "symbol"; if (symbol === "X") { sym.textContent = "X"; sym.classList.add("x"); cell.classList.add("x") } else if (symbol === "V") { sym.textContent = "V"; sym.classList.add("v"); cell.classList.add("v") } else { sym.textContent = "" } }
 
-        /* 🎯 CASE TEMPLATE */
-        function cell() { return `<td class="cell"><span class="symbol"></span><div class="numbers">${"<span></span>".repeat(9)}</div></td>`; }
-        function row(n) { return `<tr><td class="label-cell">${n}</td>${cell().repeat(players)}<td contenteditable="true"></td></tr>`; }
-
-        let players = 6;
-
-        /* 🛠️ RENDU INITIAL */
-        function render() {
-            body.innerHTML = "";
-            sections.forEach(part => part.forEach(n => body.insertAdjacentHTML("beforeend", row(n))));
-        }
-        render();
-
-        /* ➕➖ GESTION COLONNES */
-        document.getElementById("addPlayer").onclick = () => {
-            if (players >= 6) return;
-            players++;
-            document.querySelectorAll("#nameRow th.player-name")[players - 1].style.display = "";
-            document.querySelectorAll("#handRow .hand-count")[players - 1].style.display = "";
-            document.querySelectorAll("tr").forEach(r => {
-                if (r.querySelectorAll("td.cell").length < players) {
-                    r.insertAdjacentHTML("beforeend", cell());
-                }
-            });
-            saveData();
-        };
-
-        document.getElementById("removePlayer").onclick = () => {
-            if (players <= 1) return;
-            document.querySelectorAll(`#nameRow th:nth-child(${players + 1})`)[0].style.display = "none";
-            document.querySelectorAll(`#handRow th:nth-child(${players + 1})`)[0].style.display = "none";
-            document.querySelectorAll("tbody tr").forEach(r => {
-                r.querySelectorAll(".cell")[players - 1].remove();
-            });
-            players--;
-            saveData();
-        };
-
-        /* ✔️/❌ + CHIFFRES */
-        function toggleSymbol(c) {
-            const s = c.querySelector(".symbol");
-            s.textContent = s.textContent == "" ? "❌" : s.textContent == "❌" ? "✔️" : "";
-        }
-        function editNumbers(c) {
-            const d = prompt("Numéros ? (ex: 1234)");
-            if (!d) return;
-            const nums = d.replace(/[^1-9]/g, "").slice(0, 9).split("");
-            c.querySelectorAll(".numbers span").forEach((s, i) => s.textContent = nums[i] || "");
-        }
-        document.addEventListener("pointerdown", e => {
-            if (!e.target.closest(".cell")) return;
-            const c = e.target.closest(".cell");
-            c._timer = setTimeout(() => editNumbers(c), 450);
-        });
-        document.addEventListener("pointerup", e => {
-            const c = e.target.closest(".cell");
-            if (!c) return;
-            clearTimeout(c._timer);
-            if (!c._timer) return;
-            toggleSymbol(c);
+        document.addEventListener("click", e => {
+            const label = e.target.closest(".label-cell"); if (label && !e.target.closest(".cell")) { label.classList.toggle("strike"); save(); return }
+            const cell = e.target.closest(".cell"); if (cell) { const sym = cell.querySelector(".symbol"); const current = sym.textContent.trim(); if (current === "") { setSymbol(cell, "X") } else if (current === "X") { setSymbol(cell, "V") } else { setSymbol(cell, null) } save(); return }
+            const handOption = e.target.closest(".hand-count-option"); if (handOption) { const value = handOption.dataset.value; const dropdown = handOption.closest(".dropdown"); const valueSpan = dropdown.querySelector(".hand-count-value"); if (valueSpan) valueSpan.textContent = value; save(); return }
         });
 
-        /* 🧽 RESET */
-        document.getElementById("clearAll").onclick = () => {
-            localStorage.removeItem("cluedo-save");
-            location.reload();
-        };
+        bodyEl.addEventListener("input", e => { if (e.target.matches(".notes-cell[contenteditable], .label-cell[contenteditable]")) { save() } else if (e.target.matches("[contenteditable]")) { save() } });
+        nameRow.addEventListener("input", e => { if (e.target.classList.contains("player-name")) { fillPlayerSelect(); save() } });
 
-        /* 🌙 DARK */
-        document.getElementById("toggleDark").onclick = () => {
-            document.body.classList.toggle("dark");
-            saveData();
-        };
+        document.getElementById("addPlayer").addEventListener("click", () => { if (players >= 6) return; players++; suppositions = []; localStorage.removeItem("cluedo-suppositions"); renderHeader(); renderBody(); applySuppositions(); save() });
+        document.getElementById("removePlayer").addEventListener("click", () => { if (players <= 1) return; players--; suppositions = []; localStorage.removeItem("cluedo-suppositions"); renderHeader(); renderBody(); applySuppositions(); save() });
 
-        /* 💾 SAUVEGARDE AUTOMATIQUE */
-        function saveData() {
-            const data = {
-                players, body: body.innerHTML,
-                names: [...document.querySelectorAll(".player-name")].map(x => x.textContent),
-                hands: [...document.querySelectorAll(".hand-count")].map(x => x.textContent),
-                dark: document.body.classList.contains("dark")
-            };
-            localStorage.setItem("cluedo-save", JSON.stringify(data));
-        }
-        function loadData() {
-            const d = localStorage.getItem("cluedo-save");
-            if (!d) return;
-            const data = JSON.parse(d);
-            players = data.players;
-            body.innerHTML = data.body;
-            document.querySelectorAll(".player-name").forEach((n, i) => n.textContent = data.names[i]);
-            document.querySelectorAll(".hand-count").forEach((n, i) => n.textContent = data.hands[i]);
-            if (data.dark) document.body.classList.add("dark");
-        }
-        loadData();
+        document.getElementById("zoomIn").addEventListener("click", () => { zoom = Math.min(90, zoom + 6); applyZoom(); save() });
+        document.getElementById("zoomOut").addEventListener("click", () => { zoom = Math.max(24, zoom - 6); applyZoom(); save() });
+        document.getElementById("toggleDark").addEventListener("click", () => { document.body.classList.toggle("dark"); save() });
 
+        document.getElementById("clearAll").addEventListener("click", () => { if (!confirm("Effacer toute la feuille et la sauvegarde ?")) return; localStorage.removeItem("cluedo-body"); localStorage.removeItem("zoom"); localStorage.removeItem("dark"); localStorage.removeItem("players"); localStorage.removeItem("cluedo-suppositions"); location.reload() });
+
+        document.getElementById("btnSuppositions").addEventListener("click", () => { openSuppositionsModal(null) });
+        document.getElementById("btnSaveSupposition").addEventListener("click", () => { const pIndex = parseInt(suppPlayerSelect.value, 10); const sIndex = parseInt(suppSuspectSelect.value, 10); const aIndex = parseInt(suppArmeSelect.value, 10); const lIndex = parseInt(suppLieuSelect.value, 10); if (isNaN(pIndex) || isNaN(sIndex) || isNaN(aIndex) || isNaN(lIndex)) return; if (currentSuppositionId == null) { const now = Date.now(); const entry = { id: now + Math.random(), playerIndex: pIndex, suspectIndex: sIndex, armeIndex: aIndex, lieuIndex: lIndex, createdAt: now }; suppositions.push(entry) } else { const existing = suppositions.find(s => s.id === currentSuppositionId); if (existing) { existing.playerIndex = pIndex; existing.suspectIndex = sIndex; existing.armeIndex = aIndex; existing.lieuIndex = lIndex } } currentSuppositionId = null; applySuppositions(); updateSuppositionsHistoryUI(); save() });
+
+        suppHistoryEl.addEventListener("click", e => { const editBtn = e.target.closest(".btn-edit-supposition"); const delBtn = e.target.closest(".btn-delete-supposition"); if (editBtn) { const id = parseFloat(editBtn.dataset.id); openSuppositionsModal(id); return } if (delBtn) { const id = parseFloat(delBtn.dataset.id); suppositions = suppositions.filter(s => s.id !== id); applySuppositions(); updateSuppositionsHistoryUI(); save(); return } });
+
+        suppModalEl.addEventListener("hidden.bs.modal", () => { currentSuppositionId = null });
+        initialRender();
     </script>
-
 </body>
 
 </html>
