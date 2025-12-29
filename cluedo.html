@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cluedo – Feuille d’enquête</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* 🎨 Thème FBI Minimaliste */
+
+        :root {
+            --bg: #f7f7f7;
+            --text: #111;
+            --card: #ffffff;
+            --border: #bbb;
+            --accent: #222;
+            --danger: #c93f3f;
+            --success: #1c8d3a;
+        }
+
+        body.dark {
+            --bg: #000000;
+            --text: #e8e8e8;
+            --card: #0f0f0f;
+            --border: #333;
+            --accent: #e8e8e8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        /* HEADER TITLE */
+
+        h1 {
+            background: var(--accent);
+            color: white;
+            padding: 12px;
+            margin: 0 0 10px;
+            letter-spacing: 2px;
+            font-size: clamp(1rem, 5vw, 1.6rem);
+            text-align: center;
+        }
+
+        /* PANEL */
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 12px;
+        }
+
+        /* BUTTONS */
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        button {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: var(--border);
+            cursor: pointer;
+        }
+
+        button.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        button.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 6px;
+        }
+
+        table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 6px;
+            text-align: center;
+            font-size: .9rem;
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        th.player-name[contenteditable],
+        th.player-name {
+            background: #2e2e2e;
+        }
+
+        /* CARTES */
+
+        td.label-cell {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        td.label-cell.strike {
+            text-decoration: line-through;
+            opacity: .4;
+        }
+
+        /* CASES */
+
+        td.cell {
+            background: var(--card);
+            cursor: pointer;
+            user-select: none;
+            width: 48px;
+            height: 42px;
+            position: relative;
+        }
+
+        .symbol {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .numbers {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            font-size: .55rem;
+            pointer-events: none;
+            text-align: left;
+            line-height: 1.1;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width:768px) {
+            .symbol {
+                display: none
+            }
+
+            td.cell {
+                height: 50px
+            }
+
+            .numbers {
+                font-size: .9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🕵️ DOSSIER D'ENQUÊTE – CLUEDO</h1>
+
+    <div class="container">
+
+        <div class="controls">
+            <button id="removePlayer">➖ Retirer joueur</button>
+            <button id="addPlayer">➕ Ajouter joueur</button>
+            <button id="clearAll" class="danger">🗑️ Effacer</button>
+            <button id="toggleDark" class="success">🌙/☀️</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="sheet">
+                <thead>
+                    <tr id="nameRow">
+                        <th>Carte</th>
+                        <th class="player-name" contenteditable="true">J1</th>
+                        <th class="player-name" contenteditable="true">J2</th>
+                        <th class="player-name" contenteditable="true">J3</th>
+                        <th class="player-name" contenteditable="true">J4</th>
+                        <th class="player-name" contenteditable="true">J5</th>
+                        <th class="player-name" contenteditable="true">J6</th>
+                        <th>Notes</th>
+                    </tr>
+                    <tr id="handRow">
+                        <th>Cartes</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th class="hand-count" contenteditable="true">0</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="body"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        /* 📌 CARTES COURTES */
+        const suspects = ["Rose", "Moutarde", "Olive", "Violet", "Leblanc", "Pervenche"];
+        const armes = ["Chandelier", "Poignard", "Revolver", "Corde", "Matraque", "Anglaise"];
+        const lieux = ["Cuisine", "Bal", "Véranda", "Bibliothèque", "Billard", "Hall", "Salon", "Salle à manger", "Bureau"];
+
+        const sections = [suspects, armes, lieux];
+        const body = document.getElementById("body");
+
+        /* 🎯 CASE TEMPLATE */
+        function cell() { return `<td class="cell"><span class="symbol"></span><div class="numbers">${"<span></span>".repeat(9)}</div></td>`; }
+        function row(n) { return `<tr><td class="label-cell">${n}</td>${cell().repeat(players)}<td contenteditable="true"></td></tr>`; }
+
+        let players = 6;
+
+        /* 🛠️ RENDU INITIAL */
+        function render() {
+            body.innerHTML = "";
+            sections.forEach(part => part.forEach(n => body.insertAdjacentHTML("beforeend", row(n))));
+        }
+        render();
+
+        /* ➕➖ GESTION COLONNES */
+        document.getElementById("addPlayer").onclick = () => {
+            if (players >= 6) return;
+            players++;
+            document.querySelectorAll("#nameRow th.player-name")[players - 1].style.display = "";
+            document.querySelectorAll("#handRow .hand-count")[players - 1].style.display = "";
+            document.querySelectorAll("tr").forEach(r => {
+                if (r.querySelectorAll("td.cell").length < players) {
+                    r.insertAdjacentHTML("beforeend", cell());
+                }
+            });
+            saveData();
+        };
+
+        document.getElementById("removePlayer").onclick = () => {
+            if (players <= 1) return;
+            document.querySelectorAll(`#nameRow th:nth-child(${players + 1})`)[0].style.display = "none";
+            document.querySelectorAll(`#handRow th:nth-child(${players + 1})`)[0].style.display = "none";
+            document.querySelectorAll("tbody tr").forEach(r => {
+                r.querySelectorAll(".cell")[players - 1].remove();
+            });
+            players--;
+            saveData();
+        };
+
+        /* ✔️/❌ + CHIFFRES */
+        function toggleSymbol(c) {
+            const s = c.querySelector(".symbol");
+            s.textContent = s.textContent == "" ? "❌" : s.textContent == "❌" ? "✔️" : "";
+        }
+        function editNumbers(c) {
+            const d = prompt("Numéros ? (ex: 1234)");
+            if (!d) return;
+            const nums = d.replace(/[^1-9]/g, "").slice(0, 9).split("");
+            c.querySelectorAll(".numbers span").forEach((s, i) => s.textContent = nums[i] || "");
+        }
+        document.addEventListener("pointerdown", e => {
+            if (!e.target.closest(".cell")) return;
+            const c = e.target.closest(".cell");
+            c._timer = setTimeout(() => editNumbers(c), 450);
+        });
+        document.addEventListener("pointerup", e => {
+            const c = e.target.closest(".cell");
+            if (!c) return;
+            clearTimeout(c._timer);
+            if (!c._timer) return;
+            toggleSymbol(c);
+        });
+
+        /* 🧽 RESET */
+        document.getElementById("clearAll").onclick = () => {
+            localStorage.removeItem("cluedo-save");
+            location.reload();
+        };
+
+        /* 🌙 DARK */
+        document.getElementById("toggleDark").onclick = () => {
+            document.body.classList.toggle("dark");
+            saveData();
+        };
+
+        /* 💾 SAUVEGARDE AUTOMATIQUE */
+        function saveData() {
+            const data = {
+                players, body: body.innerHTML,
+                names: [...document.querySelectorAll(".player-name")].map(x => x.textContent),
+                hands: [...document.querySelectorAll(".hand-count")].map(x => x.textContent),
+                dark: document.body.classList.contains("dark")
+            };
+            localStorage.setItem("cluedo-save", JSON.stringify(data));
+        }
+        function loadData() {
+            const d = localStorage.getItem("cluedo-save");
+            if (!d) return;
+            const data = JSON.parse(d);
+            players = data.players;
+            body.innerHTML = data.body;
+            document.querySelectorAll(".player-name").forEach((n, i) => n.textContent = data.names[i]);
+            document.querySelectorAll(".hand-count").forEach((n, i) => n.textContent = data.hands[i]);
+            if (data.dark) document.body.classList.add("dark");
+        }
+        loadData();
+
+    </script>
+
+</body>
+
+</html>
